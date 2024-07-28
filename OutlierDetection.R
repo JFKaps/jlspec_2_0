@@ -22,14 +22,26 @@ setwd("~/Desktop/SDU/Cand/2.Sem/ISA/Jakob/Bsc-R-scripts--main/Data working")
 sequence <- read.csv("Eva sequence_lipidomics_pos.csv")
 data <- read.csv("Eva-pos-export-from-profinder.csv")
 
-#data <- read.csv("OG lab_data.csv")
-#sequence <- read.csv("OG seq_OBS_manipuleret.csv")
+head(sequence)
+head(data)
 
-#data <- read.csv("Signe lipid mLiver jackob_new.csv")
-#sequence <- read.csv("Signe Mliver liopid seq jacob1.csv")
+data <- read.csv("OG lab_data.csv")
+sequence <- read.csv("OG seq_OBS_manipuleret.csv")
 
-#data <- read.csv("helle fix.csv")
-#sequence <- read.csv("helle seq fix.csv")
+head(sequence)
+head(data)
+
+data <- read.csv("Signe lipid mLiver jackob_new.csv")
+sequence <- read.csv("Signe Mliver liopid seq jacob1.csv")
+
+head(sequence)
+head(data)
+
+data <- read.csv("helle fix.csv")
+sequence <- read.csv("helle seq fix.csv")
+
+head(sequence)
+head(data)
 
 #### Data Cleaning ---- 
 # Subset data and sequence to keep only 'Name' and 'Sample' columns
@@ -213,7 +225,6 @@ perform_pca_analysis <- function(data, sequence) {
   return(list(Scree_plotly = Scree_plotly,
               PCA.df = PCA.df))
 }
-perform_pca_analysis(data, sequence)
 
 # Function to create the PCA plot
 create_pca_plot <- function(PCA.df, custom_colors) {
@@ -247,7 +258,63 @@ scree_plotly
 pca_plotly <- create_pca_plot(result$PCA.df, custom_colors)  # To display the PCA plot
 pca_plotly
 
+result$PCA.df
+#### Clustering-Based Methods ----
+#### K-means clustering ---- 
+# k-means clustering
+# for k-means we need to set a number of clusters k. To find a number we try three different ways of doing so (notice we now use the objects PCs we created based on our PCA) 
+wss <- fviz_nbclust(result$PCA.df[,2:3],
+                    kmeans,
+                    method = "wss",
+                    k.max = nrow(result$PCA.df)-1)# 1st one is within-cluster sum of squares, the optimal one is where the elbow lies
+ggplotly(wss) # show the plot
+sil <- fviz_nbclust(result$PCA.df[,2:3],
+                    kmeans,
+                    method = "silhouette",
+                    k.max = nrow(result$PCA.df)-1) # 2nd is silhouette score. This actually shows you the optimal cluster number
+ggplotly(sil) # show the plot
+gap <- fviz_nbclust(result$PCA.df[,2:3],
+                    kmeans,
+                    method = "gap_stat",
+                    k.max = nrow(result$PCA.df)-1) # 3rd is gap statistiscs. This also shows you the optimal cluster number
+ggplotly(gap) # show the plot
 
+# Extract layers from the ggplot object
+layers <- sil$layers
+
+# Iterate over layers to find xintercept values
+for (layer in layers) {
+  if (!is.null(layer$data) && "xintercept" %in% names(layer$data)) {
+    x_intercepts <- layer$data$xintercept
+    # Now 'x_intercepts' contains the numeric values associated with xintercept
+    print(x_intercepts)
+  }
+}
+
+
+k = x_intercepts# set k = optimal value from plots
+kmeans <- kmeans(result$PCA.df[,2:3], centers = k) # this line performs the k-means clustering
+cluster_labels <- kmeans$cluster[rownames(result$PCA.df[,2:3])] # this matches our clustering with our PCA
+
+kmeans.df <- data.frame(x = result$PCA.df[,2],
+                        y = result$PCA.df[,3],
+                        cluster = factor(cluster_labels),
+                        Sample = plot_data$Sample) # as before we create a dataframe for plotting our clustering
+plot_kmeans = ggplot(kmeans.df,
+                     aes(x = x,
+                         y = y,
+                         color = cluster,
+                         sample = Sample)) + # again we use ggplot to customize our plot
+  ggtitle("k-means Clustering") +
+  geom_point(size = 2) +
+  labs(color = "Clusters") +
+  xlab("PC1") +
+  ylab("PC2") +
+  scale_color_manual(values = custom_colors) +
+  theme_bw()
+ggplotly(plot_kmeans)
+
+#### Hierarchical clustering ---- 
 #### Density-Based Methods ----
 #### Local Outlier Factor (LOF) ---- 
 calculate_and_plot_lof <- function(PCA.df) {
@@ -304,12 +371,12 @@ ggplotly(LOF_OD_plot)
 kNN_plot <- kNNdistplot(PCs, minPts = 4)
 abline(h = 5, col = "red", lty = 2)
 
-res <- dbscan(as.matrix(PCs), eps = 5, MinPts = 4)
+res <- dbscan(as.matrix(result$PCA.df[,2:3]), eps = 5, MinPts = 4)
 
 # Combine PCA results and cluster assignments into a data frame
-plot_data <- data.frame(Sample = rownames(PCA.df), 
-                        PC1 = PCA.df[,2],
-                        PC2 = PCA.df[,3],
+plot_data <- data.frame(Sample = rownames(result$PCA.df), 
+                        PC1 = result$PCA.df[,2],
+                        PC2 = result$PCA.df[,3],
                         Cluster = factor(res$cluster),
                         Corepoint = res$isseed)
 
@@ -367,15 +434,15 @@ ggplotly(HDBSCAN_plot)
 
 #### OPTICS ---- 
 # kNN distances 
-kNN <- kNNdist(PCA.df[,2:3], k = 3, all = FALSE)
+kNN <- kNNdist(result$PCA.df[,2:3], k = 3, all = FALSE)
 kNN
 
-kNNdistplot(PCA.df[,2:3], k = 3)
+kNNdistplot(result$PCA.df[,2:3], k = 3)
 abline(h = 5, col = "red", lty = 2)
 text(x = 9, y = 6, "Knee point")
 
 # OPTICS 
-opt <- optics(PCA.df[,2:3], minPts = 4)
+opt <- optics(result$PCA.df[,2:3], minPts = 4)
 plot(opt,
      main = "Reachability Plot",
      ylim = c(min(opt$reachdist[!is.infinite(opt$reachdist)]),
@@ -387,7 +454,7 @@ plot(opt1,
      main = "Reachability Plot kt = 6",
      ylim = c(min(opt$reachdist[!is.infinite(opt$reachdist)]),
               max(opt$reachdist[!is.infinite(opt$reachdist)]+1)))
-hullplot(PCA.df[,2:3], opt1,
+hullplot(result$PCA.df[,2:3], opt1,
          ylab = "PC2",
          xlab = "PC1",
          pch = 19)
@@ -398,17 +465,17 @@ legend("topright",
 
 
 # OPTICS with specified eps
-opt <- optics(PCA.df[,2:3], eps = 5, minPts = 4)
+opt <- optics(result$PCA.df[,2:3], eps = 5, minPts = 4)
 plot(opt,
      main = "Reachability Plot",
      ylim = c(min(opt$reachdist[!is.infinite(opt$reachdist)]),
               max(opt$reachdist[!is.infinite(opt$reachdist)]+1)))
-plot(PCA.df[opt$order, 2:3], 
+plot(result$PCA.df[opt$order, 2:3], 
      col = "red",
      main = "OPTICS Traversal",
      ylab = "PC2",
      xlab = "PC1")
-polygon(PCA.df[,2:3][opt$order,])
+polygon(result$PCA.df[,2:3][opt$order,])
 
 # OPTICS with cutoff 
 opt1 <- extractDBSCAN(opt, eps_cl = 4)
@@ -417,7 +484,7 @@ plot(opt1,
      main = "Reachability Plot kt = 4",
      ylim = c(min(opt$reachdist[!is.infinite(opt$reachdist)]),
               max(opt$reachdist[!is.infinite(opt$reachdist)]+1)))
-hullplot(PCA.df[,2:3], opt1,
+hullplot(result$PCA.df[,2:3], opt1,
          ylab = "PC2",
          xlab = "PC1")
 legend("topright",
@@ -425,62 +492,6 @@ legend("topright",
        col = opt1$cluster+1,
        pch = 19)
 
-#### Clustering-Based Methods ----
-#### K-means clustering ---- 
-# k-means clustering
-# for k-means we need to set a number of clusters k. To find a number we try three different ways of doing so (notice we now use the objects PCs we created based on our PCA) 
-wss <- fviz_nbclust(PCA.df[,2:3],
-                    kmeans,
-                    method = "wss",
-                    k.max = nrow(PCA.df)-1)# 1st one is within-cluster sum of squares, the optimal one is where the elbow lies
-ggplotly(wss) # show the plot
-sil <- fviz_nbclust(PCA.df[,2:3],
-                    kmeans,
-                    method = "silhouette",
-                    k.max = nrow(PCA.df)-1) # 2nd is silhouette score. This actually shows you the optimal cluster number
-ggplotly(sil) # show the plot
-gap <- fviz_nbclust(PCA.df[,2:3],
-                    kmeans,
-                    method = "gap_stat",
-                    k.max = nrow(PCA.df)-1) # 3rd is gap statistiscs. This also shows you the optimal cluster number
-ggplotly(gap) # show the plot
-
-# Extract layers from the ggplot object
-layers <- sil$layers
-
-# Iterate over layers to find xintercept values
-for (layer in layers) {
-  if (!is.null(layer$data) && "xintercept" %in% names(layer$data)) {
-    x_intercepts <- layer$data$xintercept
-    # Now 'x_intercepts' contains the numeric values associated with xintercept
-    print(x_intercepts)
-  }
-}
-
-
-k = x_intercepts# set k = optimal value from plots
-kmeans <- kmeans(PCA.df[,2:3], centers = k) # this line performs the k-means clustering
-cluster_labels <- kmeans$cluster[rownames(PCA.df[,2:3])] # this matches our clustering with our PCA
-
-kmeans.df <- data.frame(x = PCA.df[,2],
-                        y = PCA.df[,3],
-                        cluster = factor(cluster_labels),
-                        Sample = plot_data$Sample) # as before we create a dataframe for plotting our clustering
-plot_kmeans = ggplot(kmeans.df,
-                     aes(x = x,
-                         y = y,
-                         color = cluster,
-                         sample = Sample)) + # again we use ggplot to customize our plot
-  ggtitle("k-means Clustering") +
-  geom_point(size = 2) +
-  labs(color = "Clusters") +
-  xlab("PC1") +
-  ylab("PC2") +
-  scale_color_manual(values = custom_colors) +
-  theme_bw()
-ggplotly(plot_kmeans)
-
-#### Hierarchical clustering ---- 
 #### Complete ---- 
 # Create a ggplot object to visualize dimensionally reduced data with true class labels
 TrueLabel_plot <- ggplot(data = PCA.df,

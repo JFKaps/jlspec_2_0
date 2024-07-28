@@ -25,7 +25,6 @@ shinyUI(dashboardPage(
         color: black;
         text-decoration: underline;
       }")),
-    tags$style(".skin-blue .sidebar .norm a { color: #444; }"),
     tags$head(tags$script(src="CallShiny.js")),
     extendShinyjs(script="CallShiny.js", functions=c("retrieve_results","send_message","run_button")),
     fluidPage(
@@ -129,7 +128,7 @@ shinyUI(dashboardPage(
                         fluidRow(hidden(div(id = "imp_minx_hide", sliderInput("imputationMinX", "Divide min by", min = 1, max = 10, value = 1, step = 1, width = "100%")))),
                         fluidRow(
                           style = "margin-right: 0px;",
-                          column(6, prettyCheckbox("imp_onlyQC", "Only impute QC", value = TRUE)),
+                          column(6, prettyCheckbox("imp_onlyQC", "Only imputate QC")),
                           column(6)
                         ),
                         fluidRow(
@@ -147,73 +146,67 @@ shinyUI(dashboardPage(
         bsCollapsePanel("Normalization",
                         style = "primary",
                         p("Expand options below to see all the normalization methods."),
-                        div(class = "norm",
-                            bsCollapse(
-                              id =  "norm2", multiple = FALSE, open = "Normalization",
-                              bsCollapsePanel("Internal standards",
-                                              fluidRow(
-                                                selectInput("isMethod", "Method", choices = c("Nearest RT", "Same lipid structure"), selected = "Nearest RT", width = "100%")
-                                              ),
-                                              fluidRow(
-                                                checkboxGroupInput("isChoose", NULL, choices = NULL, selected = NULL, inline = FALSE)
-                                              ),
-                                              fluidRow(
-                                                style = "margin-right: 0px;",
-                                                column(12, actionLink("removeIS", "Remove IS", width = "50%") %>% 
-                                                         bsTooltip("Remove internal standards.", placement = "bottom", trigger = "hover")
-                                                )),
-                                              fluidRow(
-                                                style = "margin-right: 0px;",
-                                                column(6, checkboxInput("normalizeQC", "Normalize QC", value = T, width = "100%"), style = "padding: 0px; margin-top: 0px; margin-left: 10px; margin-right: -10px;"),
-                                                column(6, checkboxInput("newFileIS", "Save as new file", value = T, width = "100%"), style = "padding: 0px; margin-top: 0px; margin-left: 10px; margin-right: -10px;")
-                                              ),
-                                              fluidRow(
-                                                style = "margin-right: 0px;",
-                                                column(6, bsButton("normalizeIS", "Normalize", width = "100%"), style = "padding-left:0px;"),
-                                                column(6, bsButton("saveIS", "Save", width = "100%"), style = "padding-left:0px;")
-                                              )
-                              ),
-                              bsCollapsePanel("Drift correction",
-                                              fluidRow(
-                                                selectInput("driftMethod", "Signal correction method", choices = c("QC-RFSC (random forest)", "QC-RLSC (robust LOESS)"), width = "100%")
-                                              ),
-                                              fluidRow(
-                                                conditionalPanel(
-                                                  condition = "input.driftMethod == 'QC-RFSC (random forest)'",
-                                                  div(id = "dc_ntree_hide", 
-                                                      sliderInput("driftTrees", "ntree", min = 100, max = 1000, value = 500, step = 100, width = "100%")
-                                                  )
-                                                ),
-                                                conditionalPanel(
-                                                  condition = "input.driftMethod == 'QC-RLSC (robust LOESS)'",
-                                                  div(id = "dc_qcspan_hide", 
-                                                      sliderInput("driftQCspan", "QCspan", min = 0.2, max = 0.75, value = 0.5, step = 0.05, width = "100%")
-                                                  ),
-                                                  div(id = "dc_degree_hide", 
-                                                      sliderInput("driftDegree", "degree", min = 0, max = 2, value = 2, step = 1, width = "100%")
-                                                  )
-                                                )
-                                              ),
-                                              fluidRow(style = "margin-right: 0px;",
-                                                       column(12, checkboxInput("newFileDrift", "Save as new file", value = T, width = "100%"), style = "padding: 0px; margin-top: -10px; margin-left: 10px; margin-right: -10px;"),
-                                                       column(6, bsButton("runDrift", "Run", width = "100%"), style = "padding-left:0px;"),
-                                                       column(6, bsButton("saveDrift", "Save", width = "100%"), style = "padding-left:0px;")
-                                              )
-                              ),
-                              bsCollapsePanel("More",
-                                              fluidRow(
-                                                style = "margin-right: 0px;",
-                                                column(12, selectInput("normMethod", "Select normalization method", choices = c("QC (PQN)", "Sum", "Median", "Sample amount"), width = "100%"), style = "padding-left:0px;")
-                                              ),
-                                              fluidRow(
-                                                style = "margin-right: 0px;",
-                                                column(12, checkboxInput("newFileNorm", "Save as new file", value = F, width = "100%"), style = "padding: 0px; margin-top: -10px; margin-left: 10px; margin-right: -10px;"),
-                                                column(6, bsButton("normalize", "Run", width = "100%"), style = "padding-left:0px;"),
-                                                column(6, bsButton("saveNormalization", "Save", width = "100%"), style = "padding-left:0px;")
-                                              )
-                              ) %>% 
-                                bsTooltip("Press for more normalization options.", placement = "bottom", trigger = "hover")
-                            ))
+                        bsCollapse(
+                          id =  "norm2", multiple = FALSE, open = "Normalization", 
+                          bsCollapsePanel("Internal standards",
+                                          style = "color: black;",
+                                          fluidRow(
+                                            selectInput("isMethod", "Method", choices = c("Nearest RT", "Same lipid structure"), selected = "Nearest RT", width = "100%")
+                                          ),
+                                          fluidRow(
+                                            checkboxGroupInput("isChoose", NULL, choices = NULL, selected = NULL, inline = FALSE)
+                                          ),
+                                          fluidRow(
+                                            style = "margin-right: 0px;",
+                                            column(12, actionLink("removeIS", "Remove IS", width = "50%") %>% 
+                                                     bsTooltip("Remove internal standards.", placement = "bottom", trigger = "hover")
+                                            )),
+                                          fluidRow(
+                                            style = "margin-right: 0px;",
+                                            column(6, checkboxInput("normalizeQC", "Normalize QC", value = T, width = "100%"), style = "padding: 0px; margin-top: 0px; margin-left: 10px; margin-right: -10px;"),
+                                            column(6, checkboxInput("newFileIS", "Save as new file", value = T, width = "100%"), style = "padding: 0px; margin-top: 0px; margin-left: 10px; margin-right: -10px;")
+                                          ),
+                                          fluidRow(
+                                            style = "margin-right: 0px;",
+                                            column(6, bsButton("normalizeIS", "Normalize", width = "100%"), style = "padding-left:0px;"),
+                                            column(6, bsButton("saveIS", "Save", width = "100%"), style = "padding-left:0px;")
+                                          )
+                          ),
+                          bsCollapsePanel("Drift correction",
+                                          style = "color: black;",
+                                          fluidRow(
+                                            selectInput("driftMethod", "Signal correction method", choices = c("QC-RFSC (random forest)", "QC-RLSC (robust LOESS)"), width = "100%")
+                                          ),
+                                          fluidRow(div(id = "dc_ntree_hide", 
+                                                       sliderInput("driftTrees", "ntree", min = 100, max = 1000, value = 500, step = 100, width = "100%")
+                                          )),
+                                          fluidRow(hidden(div(id = "dc_qcspan_hide", 
+                                                              sliderInput("driftQCspan", "QCspan", min = 0.2, max = 0.75, value = 0.5, step = 0.05, width = "100%"))
+                                          )),
+                                          fluidRow(hidden(div(id = "dc_degree_hide", 
+                                                              sliderInput("driftDegree", "degree", min = 0, max = 2, value = 2, step = 1, width = "100%"))
+                                          )),
+                                          fluidRow(style = "margin-right: 0px;",
+                                                   column(12, checkboxInput("newFileDrift", "Save as new file", value = T, width = "100%"), style = "padding: 0px; margin-top: -10px; margin-left: 10px; margin-right: -10px;"),
+                                                   column(6, bsButton("runDrift", "Run", width = "100%"), style = "padding-left:0px;"),
+                                                   column(6, bsButton("saveDrift", "Save", width = "100%"), style = "padding-left:0px;")
+                                          )
+                          ) %>% bsTooltip("For correct usage, please refer to the user manual.", placement = "bottom", trigger = "hover"),
+                          bsCollapsePanel("More",
+                                          style = "color: #000000;",
+                                          fluidRow(
+                                            style = "margin-right: 0px;",
+                                            column(12, selectInput("normMethod", "Select normalization method", choices = c("QC (PQN)", "Sum", "Median", "Sample amount"), width = "100%"), style = "padding-left:0px;")
+                                          ),
+                                          fluidRow(
+                                            style = "margin-right: 0px;",
+                                            column(12, checkboxInput("newFileNorm", "Save as new file", value = F, width = "100%"), style = "padding: 0px; margin-top: -10px; margin-left: 10px; margin-right: -10px;"),
+                                            column(6, bsButton("normalize", "Run", width = "100%"), style = "padding-left:0px;"),
+                                            column(6, bsButton("saveNormalization", "Save", width = "100%"), style = "padding-left:0px;")
+                                          )
+                          ) %>% 
+                            bsTooltip("Press for more normalization options.", placement = "bottom", trigger = "hover")
+                        )
         ),
         bsCollapsePanel("Log transform and scaling",
                         style = "primary",
@@ -430,120 +423,6 @@ shinyUI(dashboardPage(
                        )
                      )
             ),
-            # Start ----
-            tabPanel("Data",
-                     tabsetPanel(
-                       tabPanel("Sequence File",
-                                actionButton("load_data", "Load Data"),                                   # Button to load data
-                                DTOutput("sequence_table")),        # Tab for sequence file data
-                       tabPanel("Data File", DTOutput("data_table")),                # Tab for data file
-                       tabPanel("Cleaned Sequence File",
-                                actionButton("run_data_cleaning", "Run Data Cleaning"),                   # Button to run data cleaning
-                                DTOutput("cleaned_sequence_table")),  # Tab for cleaned sequence file
-                       tabPanel("Cleaned Data File", DTOutput("cleaned_data_table"))           # Tab for cleaned data file
-                     )),
-            tabPanel("Dimensional Reduction",
-                     actionButton("run_pca", "Run PCA"),                # Button to run PCA
-                     plotlyOutput("pca_plot"),                          # Output for PCA plot
-                     plotlyOutput("scree_plot")                         # Output for Scree plot
-            ),
-            tabPanel("Outlier Detection",
-                     tabsetPanel(
-                       tabPanel("K-means",
-                                selectInput("kmeans_eval_method", "Choose Evaluation Method:",  # Dropdown to select evaluation method for K-means
-                                            choices = c("Within Sum of Square (WSS)" = "wss", "Silhouette" = "silhouette", "Gap Statistic" = "gap_stat")),
-                                actionButton("compute_kmeans_eval", "Compute Evaluation"),      # Button to compute K-means evaluation
-                                plotlyOutput("kmeans_eval_plot"),                                # Output for K-means evaluation plot
-                                numericInput("num_clusters", "Number of Clusters (k):", value = 3, min = 1),  # Input for number of clusters
-                                numericInput("percentile_threshold", "Percentile Threshold:", value = 95, min = 0, max = 100, step = 1), # Input for percentile threshold
-                                actionButton("run_kmeans", "Run K-means"),                      # Button to run K-means
-                                plotlyOutput("kmeans_plot"),                                    # Output for K-means plot
-                                DTOutput("kmeans_outliers"),                                    # Output for K-means outliers table
-                                actionButton("remove_kmeans_outliers", "Remove Selected Outliers"),  # Button to remove selected K-means outliers
-                                actionButton("save_cleaned_kmeans", "Save Cleaned Data")        # Button to save cleaned K-means data
-                       ),
-                       tabPanel("Hierarchical",
-                                selectInput("clustering_method", "Select Clustering Method:",  # Dropdown to select clustering method
-                                            choices = c("Single" = "single",
-                                                        "Complete" = "complete",
-                                                        "Average" = "average",
-                                                        "Ward's D2" = "ward.D2")),
-                                numericInput("num_clusters_hierarchical", "Number of Clusters (k):", value = 3, min = 1),  # Input for number of clusters
-                                numericInput("threshold", "Dendrogram Threshold (Distance):", value = 5, min = 0),  # Input for dendrogram threshold
-                                actionButton("run_hierarchical", "Run Hierarchical Clustering"),  # Button to run hierarchical clustering
-                                plotlyOutput("hclust_plot"),                                      # Output for hierarchical clustering plot
-                                plotlyOutput("conf_matrix_plot"),                                 # Output for confusion matrix plot
-                                plotlyOutput("dendrogram_plot"),                                  # Output for dendrogram plot
-                                DTOutput("hierarchical_outliers"),                                # Output for hierarchical outliers table
-                                actionButton("remove_hierarchical_outliers", "Remove Selected Outliers"),  # Button to remove selected hierarchical outliers
-                                actionButton("save_cleaned_hierarchical", "Save Cleaned Data")    # Button to save cleaned hierarchical data
-                       ),
-                       tabPanel("DBSCAN",
-                                numericInput("knn", "Choose k for kNN Distance Plot:", value = 5, min = 1),  # Input for k in kNN
-                                actionButton("compute_knn", "Compute kNN Distance Plot"),                   # Button to compute kNN distance plot
-                                plotlyOutput("knn_plot"),                                                    # Output for kNN plot
-                                numericInput("eps", "Choose epsilon for DBSCAN:", value = 0.5, min = 0.01, step = 0.1),  # Input for epsilon in DBSCAN
-                                numericInput("min_pts_dbscan", "Choose minPts for DBSCAN:", value = 5, min = 1),  # Input for minPts in DBSCAN
-                                actionButton("run_dbscan", "Run DBSCAN"),                                   # Button to run DBSCAN
-                                plotlyOutput("dbscan_plot"),                                                # Output for DBSCAN plot
-                                DTOutput("dbscan_outliers"),                                                # Output for DBSCAN outliers table
-                                actionButton("remove_dbscan_outliers", "Remove Selected Outliers"),         # Button to remove selected DBSCAN outliers
-                                actionButton("save_cleaned_dbscan", "Save Cleaned Data")                   # Button to save cleaned DBSCAN data
-                       ),
-                       tabPanel("HDBSCAN",
-                                numericInput("min_pts_hdbscan", "Choose minPts for HDBSCAN:", value = 5, min = 1),  # Input for minPts in HDBSCAN
-                                numericInput("threshold_hdbscan", "Outlier Threshold for HDBSCAN:", value = 0.85, min = 0.01, max = 1),  # Input for outlier threshold in HDBSCAN
-                                actionButton("run_hdbscan", "Run HDBSCAN"),                                          # Button to run HDBSCAN
-                                plotlyOutput("hdbscan_plot"),                                                        # Output for HDBSCAN plot
-                                DTOutput("hdbscan_outliers"),                                                        # Output for HDBSCAN outliers table
-                                actionButton("remove_hdbscan_outliers", "Remove Selected Outliers"),                 # Button to remove selected HDBSCAN outliers
-                                actionButton("save_cleaned_hdbscan", "Save Cleaned Data")                            # Button to save cleaned HDBSCAN data
-                       ),
-                       tabPanel("OPTICS",
-                                numericInput("min_pts_optics", "Choose minPts for OPTICS:", value = 5, min = 1),  # Input for minPts in OPTICS
-                                numericInput("eps_optics", "Choose eps for OPTICS (optional):", value = NA, min = 0.1, step = 0.1),  # Input for eps in OPTICS
-                                numericInput("eps_cl_optics", "Choose cutoff (eps_cl) for OPTICS:", value = 0.5, min = 0.1, step = 0.1),  # Input for eps_cl in OPTICS
-                                actionButton("run_optics", "Run OPTICS"),                                     # Button to run OPTICS
-                                plotOutput("optics_reachability_plot"),                                      # Output for OPTICS reachability plot
-                                plotOutput("reachability_plot_threshold"),                                   # Output for reachability plot threshold
-                                plotlyOutput("cluster_plot"),                                                # Output for cluster plot
-                                DTOutput("optics_outliers"),                                                 # Output for OPTICS outliers table
-                                actionButton("remove_optics_outliers", "Remove Selected Outliers"),          # Button to remove selected OPTICS outliers
-                                actionButton("save_cleaned_optics", "Save Cleaned Data")                     # Button to save cleaned OPTICS data
-                       ),
-                       tabPanel("LOF",
-                                numericInput("lof_threshold", "Threshold for LOF:", value = 1.5, min = 0, step = 0.1),  # Input for threshold in LOF
-                                numericInput("lof_k", "k for LOF:", value = 4, min = 1),                                 # Input for k in LOF
-                                actionButton("run_lof", "Run LOF"),                                                    # Button to run LOF
-                                plotlyOutput("lof_plot"),                                                             # Output for LOF plot
-                                plotlyOutput("lof_od_plot"),                                                          # Output for LOF outlier detection plot
-                                DTOutput("lof_outliers"),                                                             # Output for LOF outliers table
-                                actionButton("remove_lof_outliers", "Remove Selected Outliers"),                      # Button to remove selected LOF outliers
-                                actionButton("save_cleaned_lof", "Save Cleaned Data")                                 # Button to save cleaned LOF data
-                       )
-                     )),
-            tabPanel("Visualization",
-                     tabsetPanel(
-                       tabPanel("Heatmap",
-                                numericInput("num_top_features", "Number of Top Features:", value = 20, min = 1),  # Input for number of top features in heatmap
-                                selectInput("dendrogram_option", "Dendrogram Option:",                          # Dropdown to select dendrogram option
-                                            choices = c("both", "row", "column", "none"), selected = "both"),
-                                actionButton("run_heatmap", "Generate Heatmap"),                                # Button to generate heatmap
-                                plotlyOutput("heatmap_plot"),                                                   # Output for heatmap plot
-                                plotlyOutput("selected_features_heatmap_plot")                                  # Output for selected features heatmap plot
-                       ),
-                       tabPanel("Volcano Plot",
-                                selectInput("group1", "Select Group 1", choices = NULL),                        # Dropdown to select group 1 for volcano plot
-                                selectInput("group2", "Select Group 2", choices = NULL),                        # Dropdown to select group 2 for volcano plot
-                                numericInput("log2fc_threshold", "Log2 Fold Change Threshold:", value = 2),     # Input for log2 fold change threshold
-                                numericInput("pval_threshold", "P-value Threshold:", value = 0.05),             # Input for p-value threshold
-                                actionButton("run_volcano_plot", "Generate Volcano Plot"),                      # Button to generate volcano plot
-                                plotlyOutput("volcano_plot"),                                                   # Output for volcano plot
-                                DTOutput("volcano_table")                                                       # Output for volcano plot table
-                       )
-                     )
-            ),
-            # Slut ----
             tabPanel("Feature viewer",
                      fluidRow(
                        column(3, box(
@@ -574,7 +453,48 @@ shinyUI(dashboardPage(
                               uiOutput("boxplot_ui")
                        )
                      )
-            ),
+            ), # START 
+            tabPanel("Outlier Detection",
+                     fluidRow(
+                       column(3, box(
+                         width = NULL, 
+                         title = "Select Outlier Detection Method", 
+                         selectInput("method", "Choose Outlier Detection Method",
+                                     choices = c("K-means",
+                                                 "Hierarchical Clustering",
+                                                 "DBSCAN",
+                                                 "HDBSCAN",
+                                                 "OPTICS",
+                                                 "LOF")),
+                         conditionalPanel(
+                           condition = "input.method == 'K-means' || input.method == 'HierarchicalClustering'",
+                           numericInput("param1", "Number of Clusters (K)", value = 3, min = 1)
+                         ),
+                         conditionalPanel(
+                           condition = "input.method == 'DBSCAN' || input.method == 'OPTICS'",
+                           numericInput("param2", "Epsilon (eps)", value = 1, step = 0.01, min = 0.0001),
+                           numericInput("param3", "Minimum Points (minPts)", value = 5, min = 1)
+                         ),
+                         conditionalPanel(
+                           condition = "input.method == 'HDBSCAN'",
+                           numericInput("param4", "Minimum Points (minPts)", value = 5, min = 1)
+                         ),
+                         conditionalPanel(
+                           condition = "input.method == 'LOF'",
+                           numericInput("param5", "Number of Neighbors (k)", value = 5, min = 1)
+                         ),
+                         actionButton("run_algorithm", "Run Algorithm")
+                       )),
+                       column(9, box(
+                         width = NULL, 
+                         title = "Outlier Detection Results",
+                         plotOutput("clusterPlot"),
+                         tableOutput("outlierTable")
+                       ))
+                     )
+            )
+            # STOP 
+            ,
             tabPanel("Summary",
                      box(width = NULL,
                          fluidRow(
@@ -627,7 +547,6 @@ shinyUI(dashboardPage(
                                      selectInput("testType", "Select test", width = "100%",
                                                  choices = c("2 groups (unpaired)" = "GroupsUnpaired",
                                                              "2 groups (paired)" = "GroupsPaired",
-                                                             "2 groups with time (unpaired)" = "GroupsTimeUnpaired",
                                                              "2 groups with time (paired)" = "GroupsMultipleTime",
                                                              "Compare to reference group" = "CompareToReference"), selected = NULL
                                      ))
@@ -638,17 +557,6 @@ shinyUI(dashboardPage(
                                 column(6, selectInput("group1", "Group 1", choices = NULL, width = "100%")),
                                 column(6, selectInput("group2", "Group 2", choices = NULL, width = "100%"))
                               )
-                            ),
-                            conditionalPanel(
-                              condition = "input.testType == 'GroupsTimeUnpaired'",
-                              fluidRow(
-                                column(6, selectInput("group1_time", "Group", choices = NULL, width = "100%")),
-                                column(6, selectInput("time1_time", "Time", choices = NULL, width = "100%"))
-                              ),
-                              fluidRow(
-                                column(6, selectInput("group2_time", "Group", choices = NULL, width = "100%")),
-                                column(6, selectInput("time2_time", "Time", choices = NULL, width = "100%"))
-                              ),
                             ),
                             conditionalPanel(
                               condition = "input.testType == 'CompareToReference'",
