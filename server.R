@@ -1,3 +1,10 @@
+# Set the working directory
+setwd("~/Documents/GitHub/jlspec_2_0")
+
+# Source the external functions file
+source("TestFunctions.R")
+
+
 shinyServer(function(session, input, output) {
   options(shiny.maxRequestSize = 30 * 1024^2)
   
